@@ -1,0 +1,45 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR ORGANIZATION
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2019-10-16 15:59+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=cp1252\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: pygettext.py 1.5\n"
+
+
+#: modules\pos_schnuffi_ui.py:127
+msgid "<h4><img src=\":/ovr/welcome.png\" width=\"21\" height=\"21\" style=\"float: left;\">POS Schnuffi</h4><p>Lädt zwei POS Xml Dateien und vergleicht hinzugefügte, entfernte und geänderte Action Listen.</p><p>Zeigt nur Änderungen in actors vom Typ <i>appearance</i> und <i>switch</i> an! State Objects werden ignoriert da sie nur innerhalb derselben Xml relevant sind.</p>"
+msgstr ""
+
+#: modules\pos_schnuffi_ui.py:174
+msgid "POS Schnuffi Vergleichsthread läuft bereits."
+msgstr ""
+
+#: modules\pos_schnuffi_ui.py:199
+msgid "POS Daten werden geladen und verglichen..."
+msgstr ""
+
+#: modules\pos_schnuffi_ui.py:203
+msgid "POS Daten laden und vergleichen abgeschlossen."
+msgstr ""
+
+#: modules\pos_schnuffi_ui.py:206
+msgid "Keine Unterschiede gefunden."
+msgstr ""
+
+#: modules\pos_schnuffi_ui.py:207
+msgid "POS Daten laden und vergleichen abgeschlossen. Keine unterschiede gefunden."
+msgstr ""
+
+#: modules\pos_schnuffi_ui.py:244
+msgid "Error"
+msgstr ""
+

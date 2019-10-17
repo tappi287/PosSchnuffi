@@ -1,0 +1,16 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+pyinstaller = {git = "https://github.com/pyinstaller/pyinstaller.git"}
+
+[packages]
+pyside2 = "*"
+ujson = "*"
+jsonpickle = "*"
+lxml = "*"
+
+[requires]
+python_version = "3.7"
