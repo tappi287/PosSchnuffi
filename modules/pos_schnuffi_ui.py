@@ -52,17 +52,11 @@ class SchnuffiWindow(QtWidgets.QMainWindow):
         self.intro_timer.setSingleShot(True)
         self.intro_timer.setInterval(500)
 
-        # -- Expand item worker --
-        self.chunk_size = 5
-        self.expand_item_ls = list()
-        self.expand_worker = QtCore.QTimer()
-        self.expand_worker.setInterval(25)
-
         # -- Add item worker --
         self.item_worker = QtCore.QTimer()
         self.item_worker.setInterval(15)
         self.remaining_items = 0
-        self.item_chunk_size = 15
+        self.item_chunk_size = 35
         
         self.export = ExportActionList(self, self)
 
@@ -80,7 +74,6 @@ class SchnuffiWindow(QtWidgets.QMainWindow):
         self.expandBtn.pressed.connect(self.expand_all_items)
 
         # Work Timer
-        self.expand_worker.timeout.connect(self.expand_work_chunk)
         self.item_worker.timeout.connect(self.add_widget_item)
 
         self.progressBar.hide()
@@ -161,22 +154,11 @@ class SchnuffiWindow(QtWidgets.QMainWindow):
 
     def expand_all_items(self):
         for widget in self.widget_list:
-            self.expand_item_ls += widget.findItems('*', QtCore.Qt.MatchWildcard)
+            widget.hide()
+            widget.expandAll()
 
-        self.expand_worker.start()
-
-    def expand_work_chunk(self):
-        count = self.chunk_size
-
-        while count > 0:
-            if self.expand_item_ls:
-                item = self.expand_item_ls.pop(0)
-                item.setExpanded(True)
-            else:
-                self.expand_worker.stop()
-                break
-
-            count -= 1
+        for widget in self.widget_list:
+            widget.show()
 
     def open_file_window(self):
         self.file_win = FileWindow(self, self)

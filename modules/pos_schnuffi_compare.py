@@ -59,27 +59,33 @@ class GuiCompare(QtCore.QThread):
             target 0 - switches, 1 - looks
         """
         for target in range(0, 2):
-            add_item = QTreeWidgetItem(['0 Actors - hinzugefügt(kommen -nur- in neuer Xml vor)'])
-            rem_item = QTreeWidgetItem(['1 Actors - entfernt(in neuer Xml nicht mehr verwendet)'])
-            mod_item = QTreeWidgetItem(['2 Actors - geändert(Häufigkeit der Verwendung oder Werte verändert)'])
-
             if target == 0:
                 widget = self.widgets[3 + target]
                 add_set, rem_set, mod_set = diff_cls.add_switches, diff_cls.rem_switches, diff_cls.mod_switches
-            elif target == 1:
+            else:
                 widget = self.widgets[3 + target]
                 add_set, rem_set, mod_set = diff_cls.add_looks, diff_cls.rem_looks, diff_cls.mod_looks
 
-            for parent, actor_set in zip(
-                    [add_item, rem_item, mod_item],
-                    [add_set, rem_set, mod_set]
+            add_text = f'{len(add_set):03d} Actors - hinzugefügt(kommen -nur- in neuer Xml vor)'
+            rem_text = f'{len(rem_set):03d} Actors - entfernt(in neuer Xml nicht mehr verwendet)'
+            mod_text = f'{len(mod_set):03d} Actors - geändert(Häufigkeit der Verwendung oder Werte verändert)'
+
+            item_num = 0
+            for parent, actor_set, parent_text in zip(
+                    (QTreeWidgetItem(), QTreeWidgetItem(), QTreeWidgetItem()),
+                    (add_set, rem_set, mod_set),
+                    (add_text, rem_text, mod_text)
                     ):
                 for actor in actor_set:
                     item = QTreeWidgetItem(parent, [actor])
                     item.setFlags(self.item_flags)
 
                 if parent.childCount():
+                    parent.setData(0, QtCore.Qt.DisplayRole, f'{item_num} - {parent_text}')
                     self.add_item_queued(parent, widget)
+                    item_num += 1
+                else:
+                    del parent
 
     def add_item_queued(self, item, widget):
         self.add_item.emit()
