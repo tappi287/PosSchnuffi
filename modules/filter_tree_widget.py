@@ -23,7 +23,7 @@ class TreeWidgetFilter(QObject):
 
         self.filter_timer = QTimer()
         self.filter_timer.setSingleShot(True)
-        self.filter_timer.setInterval(500)
+        self.filter_timer.setInterval(1500)
         self.filter_timer.timeout.connect(self.search)
 
         self.restore_timer = QTimer()
@@ -66,7 +66,8 @@ class TreeWidgetFilter(QObject):
             filter_txt = self.line_edit.text()
             filter_txt += event.text()
 
-            self.widget.info_overlay.display(f'Filter: {filter_txt}', 1500, True)
+            if filter_txt:
+                self.widget.info_overlay.display(f'Filtering: {filter_txt}', 1500, True)
             self.line_edit.setText(filter_txt)
 
             return True
@@ -89,6 +90,16 @@ class TreeWidgetFilter(QObject):
     def _prepare_filtering(self):
         LOGGER.debug('Running filter on: %s', self.widget.objectName())
 
+        # Display actual filter
+        t = ''
+        for word in self.line_edit.text().split(' '):
+            t += f'{word} AND '
+
+        if self.line_edit.text():
+            self.widget.info_overlay.display(f'Filtering: {t[:-5]}', 4500, True)
+        else:
+            self.widget.info_overlay.display(f'Filter Reset', 3000, True)
+
         self.bgr_animation.blink()
         self.widget.hide()
         self.busy_timer.start()
@@ -108,7 +119,9 @@ class TreeWidgetFilter(QObject):
         for item in self.iterate_widget_items_flat():
             txt = ''
             for c in self.columns:
+                # Match any column text with OR '|'
                 txt += f'{item.text(c)}|'
+
             if txt:
                 txt = txt[:-1]
 
@@ -116,13 +129,15 @@ class TreeWidgetFilter(QObject):
             index = self.widget.indexFromItem(item)
             parent_index = self.widget.indexFromItem(item.parent())
 
-            result = re.search(self.line_edit.text(), txt, flags=re.IGNORECASE)
+            results = list()
 
-            if not parent_index.isValid() and not result:
-                # Hide all top level items
+            # Match space separated filter strings with AND
+            for word in self.line_edit.text().split(' '):
+                results.append(True if re.search(word, txt, flags=re.IGNORECASE) else False)
+
+            if not all(results):
+                # Hide all non-matching items
                 self.change_item.emit(index, True, 0)
-
-            if not result:
                 continue
 
             # Un-hide

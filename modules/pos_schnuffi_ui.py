@@ -4,7 +4,7 @@ from queue import Queue
 
 from PySide2 import QtCore, QtWidgets
 from PySide2.QtGui import QBrush, QColor
-from PySide2.QtWidgets import QGroupBox
+from PySide2.QtWidgets import QGroupBox, QLineEdit
 
 from modules.filter_tree_widget import TreeWidgetFilter
 from modules.pos_schnuffi_compare import GuiCompare
@@ -88,6 +88,11 @@ class SchnuffiWindow(QtWidgets.QMainWindow):
         # File display
         self.file_name_box: QGroupBox
         self.file_name_box.setTitle(_('Dateien Alt - Neu'))
+
+        # Filter Line Edit
+        self.lineEditFilter: QLineEdit
+        self.lineEditFilter.setPlaceholderText(_('Zum filtern im Baum tippen. Leerzeichen separierte Begriffe werden '
+                                                 'mit UND gefunden. zB. t_mirko ks_bunt findet alle bunten Mirkos.'))
 
         for widget in self.widget_list:
             widget.clear()

@@ -48,12 +48,14 @@ class GuiCompare(QtCore.QThread):
         if diff.no_difference:
             self.no_difference.emit()
 
-    def _create_pos_action_list_items(self, xml_dict: dict, target: int=0):
+    def _create_pos_action_list_items(self, xml_dict: dict, target: int):
         for al_name, al_dict in xml_dict.items():
             al = QTreeWidgetItem([al_name])
+            al.setFlags(self.item_flags)
 
             for actor_name, actor_dict in al_dict.items():
                 actor = QTreeWidgetItem(al, [actor_name, actor_dict.get('value'), actor_dict.get('type')])
+                actor.setFlags(self.item_flags)
 
             if al.childCount():
                 self.add_item_queued(al, self.widgets[target])

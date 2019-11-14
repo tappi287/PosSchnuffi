@@ -137,7 +137,7 @@
     <item>
      <widget class="QTabWidget" name="widgetTabs">
       <property name="currentIndex">
-       <number>0</number>
+       <number>7</number>
       </property>
       <widget class="QWidget" name="modifiedTab">
        <attribute name="title">
@@ -520,6 +520,9 @@
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
          <widget class="QTreeWidget" name="posOldWidget">
+          <property name="selectionMode">
+           <enum>QAbstractItemView::ExtendedSelection</enum>
+          </property>
           <column>
            <property name="text">
             <string>ActionList</string>
@@ -546,6 +549,9 @@
        <layout class="QVBoxLayout" name="verticalLayout_6">
         <item>
          <widget class="QTreeWidget" name="posNewWidget">
+          <property name="selectionMode">
+           <enum>QAbstractItemView::ExtendedSelection</enum>
+          </property>
           <column>
            <property name="text">
             <string>ActionList</string>
