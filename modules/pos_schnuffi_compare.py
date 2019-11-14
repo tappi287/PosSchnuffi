@@ -37,10 +37,26 @@ class GuiCompare(QtCore.QThread):
         # Populate actor widgets
         self.add_actor_items(diff)
 
+        # Populate PosOld
+        self._create_pos_action_list_items(diff.old, 5)
+
+        # Populate PosNew
+        self._create_pos_action_list_items(diff.new, 6)
+
         self.finished.emit()
 
         if diff.no_difference:
             self.no_difference.emit()
+
+    def _create_pos_action_list_items(self, xml_dict: dict, target: int=0):
+        for al_name, al_dict in xml_dict.items():
+            al = QTreeWidgetItem([al_name])
+
+            for actor_name, actor_dict in al_dict.items():
+                actor = QTreeWidgetItem(al, [actor_name, actor_dict.get('value'), actor_dict.get('type')])
+
+            if al.childCount():
+                self.add_item_queued(al, self.widgets[target])
 
     def add_action_list_items(self, action_list, target: int=0):
         """

@@ -63,7 +63,8 @@ class SchnuffiWindow(QtWidgets.QMainWindow):
         self.info_overlay = InfoOverlay(self)
 
         self.widget_list = [self.AddedWidget, self.ModifiedWidget, self.RemovedWidget,
-                            self.switchesWidget, self.looksWidget]
+                            self.switchesWidget, self.looksWidget, self.posOldWidget,
+                            self.posNewWidget]
         self.setup_widgets()
 
         self.show()

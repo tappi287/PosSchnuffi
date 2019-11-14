@@ -513,6 +513,58 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="posOldTab">
+       <attribute name="title">
+        <string>PosXmlOld</string>
+       </attribute>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QTreeWidget" name="posOldWidget">
+          <column>
+           <property name="text">
+            <string>ActionList</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Value</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Type</string>
+           </property>
+          </column>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="posNewTab">
+       <attribute name="title">
+        <string>PosXmlNew</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_6">
+        <item>
+         <widget class="QTreeWidget" name="posNewWidget">
+          <column>
+           <property name="text">
+            <string>ActionList</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Value</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Type</string>
+           </property>
+          </column>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
     <item>
