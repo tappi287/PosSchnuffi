@@ -4,11 +4,12 @@ from statistics import mean
 from pathlib import Path
 from time import time
 from datetime import datetime
+from typing import Generator, Iterator
 
 from PySide2 import QtWidgets, QtCore
 from PySide2.QtCore import QFile, QObject, Slot, QEvent, Signal, QTimer, Qt
 from PySide2.QtGui import QMouseEvent
-from PySide2.QtWidgets import QWidget
+from PySide2.QtWidgets import QWidget, QTreeWidgetItemIterator, QTreeWidgetItem
 
 from modules.utils.globals import UI_PATH, get_settings_dir, get_current_modules_dir
 from modules.utils.ui_loader import loadUi
@@ -24,6 +25,15 @@ def replace_widget(old_widget, new_widget):
     old_widget.deleteLater()
 
     return new_widget
+
+
+def iterate_widget_items_flat(widget) -> Iterator[QTreeWidgetItem]:
+    """ Creates an item generator in flat hierachy of all TreeWidget items """
+    it = QTreeWidgetItemIterator(widget)
+
+    while it.value():
+        yield it.value()
+        it += 1
 
 
 def time_string(time_f: float) -> str:

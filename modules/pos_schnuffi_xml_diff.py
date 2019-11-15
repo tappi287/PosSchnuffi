@@ -1,8 +1,19 @@
+from pathlib import Path
+from typing import Union
+
 import lxml.etree as Et
 
-from pathlib import Path
-from modules.utils.dictdiffer import DictDiffer
 from modules.pos_schnuffi_msg import Msg
+from modules.utils.dictdiffer import DictDiffer
+from modules.utils.language import get_translation
+from modules.utils.log import init_logging
+
+# translate strings
+lang = get_translation()
+lang.install()
+_ = lang.gettext
+
+LOGGER = init_logging(__name__)
 
 
 class PosDiff:
@@ -85,8 +96,9 @@ class PosXml(object):
         self.xml_dict = dict()
         self.switches = dict()
         self.looks = dict()
+        self.state_objects = dict()
         self.conditions = dict()
-        self.xml_file = xml_file
+        self.xml_file = Path(xml_file)
 
         # List missing elements
         self.missing_al = list()
@@ -100,31 +112,22 @@ class PosXml(object):
         Parse the Xml file and store items in xml_dict:
             actionList[name]: {actor.text: {value: value.text, type: type.text}}
         """
-        self.xml_tree = Et.parse(Path(self.xml_file).as_posix())
+        self.xml_tree = Et.parse(self.xml_file.as_posix())
 
         # ----------------------
         # Iterate actionList's
-        for e in self.xml_tree.iterfind('*actionList'):
-            name = e.get('name')
-
-            if not name:
+        for e in self.iterate_xml_action_list_elements():
+            if not e.get('name'):
                 continue
 
-            self.xml_dict[name] = dict()
+            self.xml_dict[e.get('name')] = dict()
 
             # Add switch actors
-            for a in e.iterfind("./*[@type='switch']"):
-                actor = a.find('./actor').text
-                value = a.find('./value').text
-                self.xml_dict[name][actor] = {'value': value, 'type': 'switch'}
-                self.__update_actor_dict(self.switches, actor, value)
-
+            self._find_actors(e, 'switch', self.switches)
             # Add appearance actors
-            for a in e.iterfind("./*[@type='appearance']"):
-                actor = a.find('./actor').text
-                value = a.find('./value').text
-                self.xml_dict[name][actor] = {'value': value, 'type': 'appearance'}
-                self.__update_actor_dict(self.looks, actor, value)
+            self._find_actors(e, 'appearance', self.looks)
+            # Add stateObject actors
+            self._find_actors(e, 'stateObject', self.state_objects)
 
         # ----------------------
         # Add condition's and their stateObjects for Xml diagnose
@@ -141,6 +144,17 @@ class PosXml(object):
                 state_obj_name = s.findtext('stateObjectName')
                 if state_obj_name:
                     self.conditions[condition_name].append(state_obj_name)
+
+    def iterate_xml_action_list_elements(self):
+        for e in self.xml_tree.iterfind('*actionList'):
+            yield e
+
+    def _find_actors(self, e: Et._Element, actor_type: str, actor_dict: dict):
+        for a in e.iterfind(f"./*[@type='{actor_type}']"):
+            actor = a.find('./actor').text
+            value = a.find('./value').text
+            self.xml_dict[e.get('name')][actor] = {'value': value, 'type': actor_type}
+            self.__update_actor_dict(actor_dict, actor, value)
 
     @staticmethod
     def __update_actor_dict(actor_dict, actor, value):
@@ -172,6 +186,27 @@ class PosXml(object):
             al_s = f'{Msg.POS_AL_ERROR}    {"<br>".join(str(x) for x in self.missing_al)}'
             co_s = f'{Msg.POS_CO_ERROR}    {"<br>".join(str(x) for x in self.missing_co)}'
             return al_s + '<br><br>' + co_s
+
+    def to_string(self, xml: Union[None, Et._Element]=None) -> str:
+        if xml is None:
+            xml = self.xml_tree
+
+        return Et.tostring(xml,
+                           xml_declaration=True,
+                           encoding="utf-8",
+                           pretty_print=True).decode('utf-8')
+
+    def to_bytes(self, xml: Union[None, Et._Element]=None) -> bytes:
+        if xml is None:
+            xml = self.xml_tree
+        return Et.tostring(xml, xml_declaration=True, encoding="utf-8", pretty_print=False)
+
+    def write_xml_tree(self, file: Path, xml: Union[None, Et._Element]=None):
+        if xml is None:
+            xml = self.xml_tree
+
+        with open(file.as_posix(), 'wb') as f:
+            f.write(self.to_bytes(xml))
 
 
 class ActionList(object):

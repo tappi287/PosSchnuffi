@@ -5,6 +5,7 @@ from PySide2.QtCore import QEvent, QModelIndex, QObject, QTimer, Qt, Signal
 from PySide2.QtWidgets import QLineEdit, QTreeWidgetItemIterator, QWidget
 
 from modules.utils.animation import BgrAnimation
+from modules.utils.gui_utils import iterate_widget_items_flat
 from modules.utils.log import init_logging
 
 LOGGER = init_logging(__name__)
@@ -116,7 +117,7 @@ class TreeWidgetFilter(QObject):
     def search(self):
         self._prepare_filtering()
 
-        for item in self.iterate_widget_items_flat():
+        for item in iterate_widget_items_flat(self.widget):
             txt = ''
             for c in self.columns:
                 # Match any column text with OR '|'
@@ -154,7 +155,7 @@ class TreeWidgetFilter(QObject):
     def restore(self):
         self._prepare_filtering()
 
-        for item in self.iterate_widget_items_flat():
+        for item in iterate_widget_items_flat(self.widget):
             # Show everything and collapse parents
             index = self.widget.indexFromItem(item)
             parent_index = self.widget.indexFromItem(item.parent())
@@ -175,14 +176,6 @@ class TreeWidgetFilter(QObject):
         item = self.widget.itemFromIndex(index)
         self.widget.horizontalScrollBar().setSliderPosition(0)
         self.widget.scrollToItem(item)
-
-    def iterate_widget_items_flat(self):
-        """ Creates an item generator in flat hierachy of all TreeWidget items """
-        it = QTreeWidgetItemIterator(self.widget)
-
-        while it.value():
-            yield it.value()
-            it += 1
 
     def apply_item_change(self, index, hide=False, expand: int = 0):
         """ Receives signal to hide/unhide or expand/collapse items """

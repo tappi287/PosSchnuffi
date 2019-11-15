@@ -1,12 +1,15 @@
 from datetime import datetime
 from pathlib import Path
+from typing import Union, Tuple
 
 from PySide2 import QtWidgets
+from PySide2.QtCore import Qt
 from lxml import etree
 
 from modules.knecht_xml import KnechtXml
 from modules.pos_schnuffi_msg import Msg
 from modules.pos_schnuffi_xml_diff import PosXml
+from modules.utils.gui_utils import iterate_widget_items_flat
 from modules.utils.language import get_translation
 from modules.utils.log import init_logging
 from modules.utils.settings import KnechtSettings
@@ -77,17 +80,82 @@ class ExportActionList(object):
                 - adding selected action lists from new POS Xml, if in "NewXml_actionList" widget
         """
         action_list_names, file, widget = self._prepare_export()
-        if not file or not action_list_names:
-            self.err.emit(_('Nichts zum Exportieren gefunden.'))
+        if not file:
             return
 
         if widget is self.pos_ui.ModifiedWidget:
+            if not action_list_names:
+                self.err.emit(_('Nichts zum Exportieren gewählt.'))
+                return
             if not self.update_old_pos_xml_with_changed_action_lists(action_list_names, file):
                 return
+        elif widget in (self.pos_ui.posNewWidget, self.pos_ui.posOldWidget):
+            if not self.update_pos_xml_from_pos_widget(file, widget):
+                return
         else:
+            self.err.emit(_('Exportieren aus diesem Baum wird nicht unterstützt.'))
             return
 
         self.pos_app.export_sig.emit()
+
+    def update_pos_xml_from_pos_widget(self, out_file: Path, widget: QtWidgets.QTreeWidget) -> bool:
+        if widget is self.pos_ui.posNewWidget:
+            _, pos_xml = self.get_pos_xmls()
+        else:
+            pos_xml, _ = self.get_pos_xmls()
+
+        al_items = [i for i in iterate_widget_items_flat(widget) if not i.parent()]
+        al_names = [i.data(0, Qt.DisplayRole) for i in al_items]
+        al_updated = list()
+
+        for e in pos_xml.iterate_xml_action_list_elements():
+            if e.get('name') not in al_names:
+                continue
+
+            al_list_index = al_names.index(e.get('name'))
+            al_item = al_items[al_list_index]
+
+            if al_item.data(0, Qt.UserRole) != True:
+                # Skip unedited items
+                continue
+
+            LOGGER.debug('Found edited actionList in widget: %s', e.get('name'))
+            al_updated.append(e.get('name'))
+
+            # Remove old Action elements
+            for old_action in e.iter('action'):
+                e.remove(old_action)
+
+            # Create Action elements from widget
+            for c in range(0, al_item.childCount()):
+                actor_item = al_item.child(c)
+
+                # <action>
+                action_element = etree.SubElement(e, 'action')
+                # <action type="">
+                action_element.attrib['type'] = actor_item.data(2, Qt.DisplayRole) or 'None'
+                # /<actor>
+                actor_element = etree.SubElement(action_element, 'actor')
+                actor_element.text = actor_item.data(0, Qt.DisplayRole)
+                # /<value>
+                value_element = etree.SubElement(action_element, 'value')
+                value_element.text = actor_item.data(1, Qt.DisplayRole)
+                # /<description>
+                desc_element = etree.SubElement(action_element, 'description')
+
+        # Try to write the POS mess as a file, this will fail with xml.etree
+        LOGGER.info('Exporting POS Xml with updated action lists:\n%s', ', '.join(al_updated))
+        self.add_export_info_comment(pos_xml.xml_tree.getroot(), al_updated, Path('.'), pos_xml.xml_file)
+
+        try:
+            pos_xml.write_xml_tree(out_file)
+            self.err.emit(Msg.POS_EXPORT_MSG.format(out_file.as_posix()))
+            return True
+        except Exception as e:
+            self.err.emit(self.err_msg[5])
+            LOGGER.error('POS Xml is malformed and could not be written/serialized.\n%s', e)
+
+        return False
 
     def update_old_pos_xml_with_new_action_lists(self, action_list_names, out_file):
         """
@@ -239,7 +307,7 @@ class ExportActionList(object):
 
         return file
 
-    def get_pos_xmls(self):
+    def get_pos_xmls(self) -> Tuple[Union[None, PosXml], Union[None, PosXml]]:
         """ Read old and new POS Xml and return as PosXml class objects """
         if self.pos_app.file_win:
             old_pos_xml_file = self.pos_app.file_win.old_file_dlg.path
@@ -260,7 +328,7 @@ class ExportActionList(object):
         return pos_xml, new_xml
 
     @staticmethod
-    def parse_pos_xml(xml_file_path: Path):
+    def parse_pos_xml(xml_file_path: Path) -> Union[PosXml, None]:
         # Parse to Xml
         if xml_file_path.exists():
             try:
@@ -294,7 +362,7 @@ class ExportActionList(object):
         msg_ls = [f' #1 modified with RenderKnecht POS Schnuffi on {current_date} ',
                   f' #2 actionList elements updated: {item_str[:-2]} ',
                   f' #3 updated actionList elements from source document: {Path(new_path).name} ',
-                  f' #4 base document: {Path(old_path).name} ']
+                  f' #4 base document: {Path(old_path).name or "-Direct Edit-"} ']
 
         for msg in msg_ls:
             element.addprevious(etree.Comment(msg))

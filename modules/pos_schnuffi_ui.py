@@ -4,9 +4,10 @@ from queue import Queue
 
 from PySide2 import QtCore, QtWidgets
 from PySide2.QtGui import QBrush, QColor
-from PySide2.QtWidgets import QGroupBox, QLineEdit
+from PySide2.QtWidgets import QGroupBox, QLineEdit, QUndoStack, QUndoGroup, QMenu
 
 from modules.filter_tree_widget import TreeWidgetFilter
+from modules.item_edit_undo import KnechtValueDelegate
 from modules.pos_schnuffi_compare import GuiCompare
 from modules.pos_schnuffi_export import ExportActionList
 from modules.utils.globals import Resource, UI_MAIN_WINDOW
@@ -62,12 +63,32 @@ class SchnuffiWindow(QtWidgets.QMainWindow):
 
         self.info_overlay = InfoOverlay(self)
 
+        self.undo_grp = QUndoGroup(self)
         self.widget_list = [self.AddedWidget, self.ModifiedWidget, self.RemovedWidget,
                             self.switchesWidget, self.looksWidget, self.posOldWidget,
                             self.posNewWidget]
         self.setup_widgets()
 
+        # --- Create undo menu ---
+        self.undo_menu = QMenu(_('Undo'), self)
+        # Create undo/redo actions from undo_grp
+        self.redo = self.undo_grp.createRedoAction(self, _('Wiederherstellen'))
+        self.redo.changed.connect(self.undo_action_changed)
+        self.undo = self.undo_grp.createUndoAction(self, _('Rückgängig'))
+        self.undo.changed.connect(self.undo_action_changed)
+        # add menu
+        self.undo_menu.addActions((self.undo, self.redo))
+        self.menuBar().addMenu(self.undo_menu)
+
         self.show()
+
+    def undo_action_changed(self):
+        obj = self.sender()
+
+        if obj == self.redo:
+            pass
+        elif obj == self.undo:
+            pass
 
     def setup_widgets(self):
         # Buttons
@@ -96,11 +117,14 @@ class SchnuffiWindow(QtWidgets.QMainWindow):
 
         for widget in self.widget_list:
             widget.clear()
+            widget.undo_stack = QUndoStack(self.undo_grp)
+            widget.setItemDelegate(KnechtValueDelegate(widget))
 
             # Overlay
             widget.info_overlay = InfoOverlay(widget)
             # Setup Filtering
             widget.filter = TreeWidgetFilter(self, widget, self.lineEditFilter)
+            widget.setAlternatingRowColors(True)
 
         self.intro_timer.timeout.connect(self.show_intro_msg)
         self.intro_timer.start()
@@ -150,7 +174,7 @@ class SchnuffiWindow(QtWidgets.QMainWindow):
         self.info_overlay.display('Export succeeded.')
 
     def error_msg(self, error_str):
-        self.widgetTabs.setCurrentIndex(0)
+        # self.widgetTabs.setCurrentIndex(0)
         self.info_overlay.display_exit()
         self.info_overlay.display_confirm(error_str, (('[X]', None), ))
 

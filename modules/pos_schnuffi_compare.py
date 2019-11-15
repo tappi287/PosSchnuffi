@@ -11,6 +11,7 @@ class GuiCompare(QtCore.QThread):
     error_report = QtCore.Signal(str, int)
 
     item_flags = (QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable)
+    item_uneditable_flags = (QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
 
     def __init__(self, old_path, new_path, widgets, cmp_queue):
         super(GuiCompare, self).__init__()
