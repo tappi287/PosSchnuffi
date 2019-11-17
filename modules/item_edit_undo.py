@@ -3,6 +3,7 @@ from PySide2.QtWidgets import QStyledItemDelegate, QTreeWidget, QUndoCommand, QS
 
 from modules.utils.language import get_translation
 from modules.utils.log import init_logging
+from modules.utils.ui_resource import FontRsc
 
 LOGGER = init_logging(__name__)
 
@@ -105,4 +106,10 @@ class ItemEditUndoCommand(QUndoCommand):
         # Flag the parent with UserData that some child has been edited(or not on Undo)
         if index.parent().isValid():
             result = model.setData(index.parent().siblingAtColumn(0), parent_user_data, Qt.UserRole)
-            LOGGER.debug('Updated parent data: %s %s', result, parent_user_data)
+
+            if result and parent_user_data:
+                # Style italic, children contain item edits
+                model.setData(index.parent().siblingAtColumn(0), FontRsc.italic, Qt.FontRole)
+            else:
+                # Style regular, children have not been edited
+                model.setData(index.parent().siblingAtColumn(0), FontRsc.regular, Qt.FontRole)

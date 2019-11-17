@@ -1,19 +1,19 @@
 import logging
-from statistics import mean
-
-from pathlib import Path
-from time import time
 from datetime import datetime
-from typing import Generator, Iterator
+from pathlib import Path
+from statistics import mean
+from time import time
+from typing import Iterator
 
-from PySide2 import QtWidgets, QtCore
-from PySide2.QtCore import QFile, QObject, Slot, QEvent, Signal, QTimer, Qt
+from PySide2 import QtCore, QtWidgets
+from PySide2.QtCore import QEvent, QFile, QObject, QTimer, Qt, Signal, Slot
 from PySide2.QtGui import QMouseEvent
-from PySide2.QtWidgets import QWidget, QTreeWidgetItemIterator, QTreeWidgetItem
+from PySide2.QtWidgets import QTreeWidgetItem, QTreeWidgetItemIterator, QWidget
+from lxml import etree as Et
 
-from modules.utils.globals import UI_PATH, get_settings_dir, get_current_modules_dir
-from modules.utils.ui_loader import loadUi
+from modules.utils.globals import UI_PATH, get_current_modules_dir, get_settings_dir
 from modules.utils.log import init_logging
+from modules.utils.ui_loader import loadUi
 
 LOGGER = init_logging(__name__)
 
@@ -60,6 +60,24 @@ def time_string(time_f: float) -> str:
         return '{:=02.0f}min:{:=02.0f}sec'.format(m, s)
     else:
         return '{:=01.0f}h:{:=02.0f}min:{:=02.0f}sec'.format(h, m, s)
+
+
+class XmlHelper:
+    @staticmethod
+    def to_string(xml: Et._Element) -> str:
+        return Et.tostring(xml,
+                           xml_declaration=True,
+                           encoding="utf-8",
+                           pretty_print=True).decode('utf-8')
+
+    @staticmethod
+    def to_bytes(xml: Et._Element) -> bytes:
+        return Et.tostring(xml, xml_declaration=True, encoding="utf-8", pretty_print=True)
+
+    @classmethod
+    def write_xml_tree(cls, file: Path, xml: Et._Element):
+        with open(file.as_posix(), 'wb') as f:
+            f.write(cls.to_bytes(xml))
 
 
 class SetupWidget(QObject):

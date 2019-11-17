@@ -9,6 +9,7 @@ from modules.utils.language import get_translation
 from modules.utils.log import init_logging
 
 # translate strings
+from modules.utils.ui_resource import FontRsc
 from modules.widgets import GenericErrorBox
 
 lang = get_translation()
@@ -31,6 +32,9 @@ class SchnuffiApp(QApplication):
         self.last_focus_tree.deleteLater()
         self.last_focus_tree = self.pos_ui.ModifiedWidget
         self.focusChanged.connect(self.app_focus_changed)
+
+        # Init Font Database
+        FontRsc.init(FontRsc.regular_pixel_size)
 
         # Prepare exception handling
         self.error_message_box = GenericErrorBox(self.pos_ui)

@@ -14,7 +14,7 @@
    <string>POS Schnuffi</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="res/pos_schnuffi_res.qrc">
+   <iconset>
     <normaloff>:/main/assignment.svg</normaloff>:/main/assignment.svg</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
@@ -74,7 +74,7 @@
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="res/pos_schnuffi_res.qrc">
+         <iconset>
           <normaloff>:/main/navicon.png</normaloff>:/main/navicon.png</iconset>
         </property>
         <property name="flat">
@@ -518,6 +518,21 @@
         <string>PosXmlOld</string>
        </attribute>
        <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
         <item>
          <widget class="QTreeWidget" name="posOldWidget">
           <property name="selectionMode">
@@ -547,6 +562,21 @@
         <string>PosXmlNew</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_6">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
         <item>
          <widget class="QTreeWidget" name="posNewWidget">
           <property name="selectionMode">
@@ -623,7 +653,7 @@
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionBeenden">
    <property name="icon">
-    <iconset resource="res/pos_schnuffi_res.qrc">
+    <iconset>
      <normaloff>:/main/sad.png</normaloff>:/main/sad.png</iconset>
    </property>
    <property name="text">
@@ -632,7 +662,7 @@
   </action>
   <action name="actionOpen">
    <property name="icon">
-    <iconset resource="res/pos_schnuffi_res.qrc">
+    <iconset>
      <normaloff>:/main/folder.png</normaloff>:/main/folder.png</iconset>
    </property>
    <property name="text">
@@ -649,7 +679,7 @@
   </action>
   <action name="actionExport">
    <property name="icon">
-    <iconset resource="res/pos_schnuffi_res.qrc">
+    <iconset>
      <normaloff>:/main/disk.png</normaloff>:/main/disk.png</iconset>
    </property>
    <property name="text">
@@ -661,7 +691,7 @@
   </action>
   <action name="actionExportPos">
    <property name="icon">
-    <iconset resource="res/pos_schnuffi_res.qrc">
+    <iconset>
      <normaloff>:/main/storage.png</normaloff>:/main/storage.png</iconset>
    </property>
    <property name="text">

@@ -3,7 +3,7 @@ from pathlib import Path
 from queue import Queue
 
 from PySide2 import QtCore, QtWidgets
-from PySide2.QtGui import QBrush, QColor
+from PySide2.QtGui import QBrush, QColor, QKeySequence
 from PySide2.QtWidgets import QGroupBox, QLineEdit, QUndoStack, QUndoGroup, QMenu
 
 from modules.filter_tree_widget import TreeWidgetFilter
@@ -29,7 +29,8 @@ class SchnuffiWindow(QtWidgets.QMainWindow):
     # Error signal
     err_sig = QtCore.Signal(str)
     export_sig = QtCore.Signal()
-    
+    non_exportable_widgets = list()
+
     def __init__(self, pos_app):
         """
 
@@ -73,22 +74,17 @@ class SchnuffiWindow(QtWidgets.QMainWindow):
         self.undo_menu = QMenu(_('Undo'), self)
         # Create undo/redo actions from undo_grp
         self.redo = self.undo_grp.createRedoAction(self, _('Wiederherstellen'))
-        self.redo.changed.connect(self.undo_action_changed)
+        self.redo.setShortcut(QKeySequence('Ctrl+Y'))
         self.undo = self.undo_grp.createUndoAction(self, _('Rückgängig'))
-        self.undo.changed.connect(self.undo_action_changed)
+        self.undo.setShortcut(QKeySequence('Ctrl+Z'))
         # add menu
         self.undo_menu.addActions((self.undo, self.redo))
         self.menuBar().addMenu(self.undo_menu)
 
+        self.non_exportable_widgets = (self.switchesWidget, self.looksWidget, self.errorTextWidget,
+                                       self.AddedWidget, self.RemovedWidget)
+
         self.show()
-
-    def undo_action_changed(self):
-        obj = self.sender()
-
-        if obj == self.redo:
-            pass
-        elif obj == self.undo:
-            pass
 
     def setup_widgets(self):
         # Buttons
@@ -136,10 +132,6 @@ class SchnuffiWindow(QtWidgets.QMainWindow):
         # Tab Changed
         self.widgetTabs.currentChanged.connect(self.tab_changed)
 
-    @staticmethod
-    def get_tree_name(widget):
-        return widget.objectName()
-
     def widget_with_focus(self):
         """ Return the current or last QTreeWidget in focus """
         return self.pos_app.tree_with_focus()
@@ -148,10 +140,15 @@ class SchnuffiWindow(QtWidgets.QMainWindow):
         tab_widget = self.widgetTabs.widget(idx)
         LOGGER.debug('Tab change: %s, %s', idx, tab_widget.objectName())
 
+        self.menuExport.setEnabled(True)
+
         # Apply filter to active tab
         for widget in tab_widget.children():
             if widget in self.widget_list:
                 widget.filter.start()
+
+            if widget in self.non_exportable_widgets:
+                self.menuExport.setEnabled(False)
 
     def closeEvent(self, close_event):
         if self.cmp_thread:
@@ -235,7 +232,7 @@ class SchnuffiWindow(QtWidgets.QMainWindow):
         for widget in self.widget_list:
             widget.show()
 
-        self.widgetTabs.setCurrentIndex(0)
+        # self.widgetTabs.setCurrentIndex(0)
 
         # self.info_overlay.display_exit()
         self.info_overlay.display(_('POS Daten laden und vergleichen abgeschlossen.'), 5000, True)

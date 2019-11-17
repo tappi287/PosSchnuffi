@@ -5,6 +5,7 @@ import lxml.etree as Et
 
 from modules.pos_schnuffi_msg import Msg
 from modules.utils.dictdiffer import DictDiffer
+from modules.utils.gui_utils import XmlHelper
 from modules.utils.language import get_translation
 from modules.utils.log import init_logging
 
@@ -191,22 +192,18 @@ class PosXml(object):
         if xml is None:
             xml = self.xml_tree
 
-        return Et.tostring(xml,
-                           xml_declaration=True,
-                           encoding="utf-8",
-                           pretty_print=True).decode('utf-8')
+        return XmlHelper.to_string(xml)
 
     def to_bytes(self, xml: Union[None, Et._Element]=None) -> bytes:
         if xml is None:
             xml = self.xml_tree
-        return Et.tostring(xml, xml_declaration=True, encoding="utf-8", pretty_print=False)
+        return XmlHelper.to_bytes(xml)
 
     def write_xml_tree(self, file: Path, xml: Union[None, Et._Element]=None):
         if xml is None:
             xml = self.xml_tree
 
-        with open(file.as_posix(), 'wb') as f:
-            f.write(self.to_bytes(xml))
+        XmlHelper.write_xml_tree(file, xml)
 
 
 class ActionList(object):

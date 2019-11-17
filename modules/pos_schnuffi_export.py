@@ -1,15 +1,14 @@
 from datetime import datetime
 from pathlib import Path
-from typing import Union, Tuple
+from typing import Union, Tuple, List
 
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 from lxml import etree
 
-from modules.knecht_xml import KnechtXml
 from modules.pos_schnuffi_msg import Msg
 from modules.pos_schnuffi_xml_diff import PosXml
-from modules.utils.gui_utils import iterate_widget_items_flat
+from modules.utils.gui_utils import iterate_widget_items_flat, XmlHelper
 from modules.utils.language import get_translation
 from modules.utils.log import init_logging
 from modules.utils.settings import KnechtSettings
@@ -32,7 +31,7 @@ class ExportActionList(object):
         self.err = self.pos_app.err_sig
 
     def _prepare_export(self):
-        widget = self.get_widget()
+        widget = self._get_widget()
         if not widget:
             self.err.emit(self.err_msg[0])
             return None, None, None
@@ -100,8 +99,10 @@ class ExportActionList(object):
 
     def update_pos_xml_from_pos_widget(self, out_file: Path, widget: QtWidgets.QTreeWidget) -> bool:
         if widget is self.pos_ui.posNewWidget:
+            # Get new PosXml as base
             _, pos_xml = self.get_pos_xmls()
         else:
+            # Get old PosXml as base
             pos_xml, _ = self.get_pos_xmls()
 
         al_items = [i for i in iterate_widget_items_flat(widget) if not i.parent()]
@@ -157,17 +158,29 @@ class ExportActionList(object):
 
         return False
 
-    def update_old_pos_xml_with_new_action_lists(self, action_list_names, out_file):
-        """
-        TODO: Add new actionList to old pos xml
-        Export an updated version of the old POS Xml, adding selected action lists
-        from new POS Xml, if in "NewXml_actionList" widget
-        """
-        # Read old and new POS Xml and return as PosXml class objects
-        pos_xml, new_xml = self.get_pos_xmls()
+    @staticmethod
+    def _collect_action_list(et: etree._ElementTree, action_list_name: str) \
+            -> Tuple[Union[None, etree._Element], Union[None, etree._Element], List[Union[None, etree._Element]]]:
+        al_elem = et.find(f"*actionList[@name='{action_list_name}']")
+        condition = et.xpath(f"*/condition/actionListName[text()='{action_list_name}']/..")[0]
 
-        if not pos_xml or not new_xml:
-            return False
+        if al_elem is None or condition is None:
+            return None, None, [None]
+
+        # Collect affected state objects
+        state_objects = list()
+        for state_object_name in condition.xpath(f"stateCondition/stateObjectName"):
+            state_object = et.find(f"*stateObject[@name='{state_object_name.text}']")
+            if state_object is not None:
+                state_objects.append(state_object)
+
+        return al_elem, condition, state_objects
+
+    @staticmethod
+    def _replace_element(parent, old_element, new_element):
+        idx = parent.index(old_element)
+        parent.remove(old_element)
+        parent.insert(idx, new_element)
 
     def update_old_pos_xml_with_changed_action_lists(self, action_list_names, out_file):
         """
@@ -180,24 +193,26 @@ class ExportActionList(object):
             return False
 
         # Prepare storage of updated POS Xml
-        updated_xml = self.prepare_updated_pos_xml_export(pos_xml.xml_tree, out_file)
+        updated_et = etree.ElementTree(pos_xml.xml_tree.getroot())
         updated_elements = set()
 
         for al_name in action_list_names:
-            parent = updated_xml.xml_tree.find(f'*actionList[@name="{al_name}"]/..')
-            old_action_list_elem = updated_xml.xml_tree.find(f'*actionList[@name="{al_name}"]')
-            new_action_list_elem = new_xml.xml_tree.find(f'*actionList[@name="{al_name}"]')
+            parent = updated_et.find(f'*actionList[@name="{al_name}"]/..')
+            old_al, old_condition, old_states = self._collect_action_list(updated_et, al_name)
+            new_al, new_condition, new_states = self._collect_action_list(new_xml.xml_tree, al_name)
 
-            if parent is None or old_action_list_elem is None or new_action_list_elem is None:
+            if parent is None or old_al is None or new_al is None or old_condition is None or new_condition is None:
                 # Skip elements not present in both POS Xml's
                 continue
 
-            updated_elements.add(al_name)
+            # Replace old actionList and condition
+            self._replace_element(parent, old_al, new_al)
+            self._replace_element(parent, old_condition, new_condition)
 
-            # Replace old action list
-            al_index = parent.index(old_action_list_elem)
-            parent.remove(old_action_list_elem)
-            parent.insert(al_index, new_action_list_elem)
+            for old_state, new_state in zip(old_states, new_states):
+                self._replace_element(parent, old_state, new_state)
+
+            updated_elements.add(al_name)
 
         if not updated_elements:
             # No elements to update found
@@ -207,15 +222,15 @@ class ExportActionList(object):
             return False
 
         # Add info comment
-        self.add_export_info_comment(updated_xml.root, updated_elements,
+        self.add_export_info_comment(updated_et.getroot(), updated_elements,
                                      self.pos_app.file_win.old_file_dlg.path,
                                      self.pos_app.file_win.new_file_dlg.path)
 
         # Try to write the POS mess as a file, this will fail with xml.etree
         LOGGER.info('Exporting POS Xml with the following action lists replaced:\n%s', updated_elements)
         try:
-            updated_xml.save_tree()
-            self.err.emit(Msg.POS_EXPORT_MSG.format(updated_xml.variants_xml_path.as_posix()))
+            XmlHelper.write_xml_tree(out_file, updated_et)
+            self.err.emit(Msg.POS_EXPORT_MSG.format(out_file.as_posix()))
         except Exception as e:
             self.err.emit(self.err_msg[5])
             LOGGER.error('POS Xml is malformed and could not be written/serialized.\n%s', e)
@@ -229,45 +244,24 @@ class ExportActionList(object):
             self.err.emit(self.err_msg[3])
             return False
 
-        state_object_names = set()
-
         # Prepare export Xml
-        xml, xml_elem = self.prepare_custom_xml_export(out_file)
+        root, state_engine = self._prepare_custom_xml_export()
 
-        #TODO: refactor this actionList+condition+stateObject collector into a function
-        # Iterate Action Lists and collect matching xml elements
-        for e in new_xml.xml_tree.findall('*actionList'):
-            name = e.get('name')
+        for al_name in action_list_names:
+            al, condition, state_objects = self._collect_action_list(new_xml.xml_tree, al_name)
+            if al is None or condition is None:
+                continue
 
-            if name in action_list_names:
-                LOGGER.debug('Adding actionList Xml element %s', name)
-                xml_elem.append(e)
-
-        # Look for matching condition lists
-        for c in new_xml.xml_tree.iterfind('*condition'):
-            # Tag "name" attribute is unfilled, we need to look for text inside the "actionListName" tag
-            condition_name = c.findtext('actionListName')
-
-            if condition_name in action_list_names:
-                LOGGER.debug('Found matching condition with actionListName %s', condition_name)
-                xml_elem.append(c)
-
-                # Collect affected state objects
-                for s in c.findall('stateCondition'):
-                    state_object_name = s.findtext('stateObjectName')
-                    if state_object_name:
-                        state_object_names.add(state_object_name)
-
-        # Collect affected stateObject's
-        LOGGER.debug("Will collect %s affected stateObject's", len(state_object_names))
-        for s in new_xml.xml_tree.iterfind('*stateObject'):
-            state_object_name = s.get('name')
-            if state_object_name in state_object_names:
-                xml_elem.insert(0, s)
+            LOGGER.debug('Adding actionList Xml element %s', al_name)
+            state_engine.append(al)
+            state_engine.append(condition)
+            for e in state_objects:
+                state_engine.insert(0, e)
 
         try:
-            xml.save_tree()
-            self.err.emit(Msg.POS_EXPORT_MSG.format(xml.variants_xml_path.as_posix()))
+            tree = etree.ElementTree(root)
+            XmlHelper.write_xml_tree(out_file, tree)
+            self.err.emit(Msg.POS_EXPORT_MSG.format(out_file.as_posix()))
         except Exception as e:
             self.err.emit(self.err_msg[4])
             LOGGER.error('POS Xml is malformed and could not be written/serialized.\n%s', e)
@@ -275,25 +269,14 @@ class ExportActionList(object):
 
         return True
 
-    def prepare_custom_xml_export(self, xml_path):
-        session_xml = KnechtXml(xml_path, None, no_knecht_tags=True)
-        session_xml.root = self.xml_dom['root']
+    def _prepare_custom_xml_export(self) -> Tuple[etree._Element, etree._Element]:
+        root = etree.Element(self.xml_dom['root'])
+        state_engine = etree.SubElement(root, self.xml_dom['sub_lvl_1'])
+        state_engine.set('autoType', 'variant')
 
-        session_xml.xml_sub_element = session_xml.root, self.xml_dom['sub_lvl_1']
-        xml_elem = session_xml.xml_sub_element
-        xml_elem.set('autoType', 'variant')
-        return session_xml, xml_elem
+        return root, state_engine
 
-    @staticmethod
-    def prepare_updated_pos_xml_export(pos_xml_tree, updated_xml_path):
-        """ Parse POS Xml tree to knecht_xml Xml tree """
-        session_xml = KnechtXml(updated_xml_path, None, no_knecht_tags=True)
-        session_xml.xml_tree = pos_xml_tree
-        session_xml.root = session_xml.xml_tree.getroot()
-
-        return session_xml
-
-    def get_widget(self):
+    def _get_widget(self):
         return self.pos_ui.widget_with_focus()
 
     def set_file(self):
