@@ -11,7 +11,7 @@ from modules.utils.log import init_logging, setup_log_queue_listener, setup_logg
 from modules.utils.settings import KnechtSettings, delayed_log_setup
 from ui import pos_schnuffi_res
 
-VERSION = '1.01'
+VERSION = '1.1'
 
 
 def initialize_log_listener(logging_queue):
