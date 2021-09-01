@@ -7,7 +7,7 @@ verify_ssl = true
 pyinstaller = {git = "https://github.com/pyinstaller/pyinstaller.git"}
 
 [packages]
-pyside2 = "==5.15.0"
+pyside2 = "==5.15.2"
 ujson = "*"
 jsonpickle = "*"
 lxml = "*"
