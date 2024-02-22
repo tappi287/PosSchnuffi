@@ -2,9 +2,9 @@ import logging
 from pathlib import Path
 from queue import Queue
 
-from PySide2 import QtCore, QtWidgets
-from PySide2.QtGui import QBrush, QColor, QKeySequence
-from PySide2.QtWidgets import QGroupBox, QLineEdit, QUndoStack, QUndoGroup, QMenu
+from qtpy import QtCore, QtWidgets
+from qtpy.QtGui import QBrush, QColor, QKeySequence, QUndoStack, QUndoGroup
+from qtpy.QtWidgets import QGroupBox, QLineEdit, QMenu
 
 from modules.filter_tree_widget import TreeWidgetFilter
 from modules.item_edit_undo import KnechtValueDelegate

@@ -1,8 +1,8 @@
 import re
 from typing import Tuple
 
-from PySide2.QtCore import QEvent, QModelIndex, QObject, QTimer, Qt, Signal
-from PySide2.QtWidgets import QLineEdit, QTreeWidgetItemIterator, QWidget
+from qtpy.QtCore import QEvent, QModelIndex, QObject, QTimer, Qt, Signal
+from qtpy.QtWidgets import QLineEdit, QTreeWidgetItemIterator, QWidget
 
 from modules.utils.animation import BgrAnimation
 from modules.utils.gui_utils import iterate_widget_items_flat

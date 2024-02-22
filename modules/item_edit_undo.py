@@ -1,5 +1,5 @@
-from PySide2.QtCore import QEvent, QModelIndex, QObject, Qt, Slot
-from PySide2.QtWidgets import QStyledItemDelegate, QTreeWidget, QUndoCommand, QStyleOptionViewItem, QWidget, QLineEdit
+from qtpy.QtCore import QEvent, QModelIndex, QObject, Qt, Slot
+from qtpy.QtWidgets import QStyledItemDelegate, QTreeWidget, QUndoCommand, QStyleOptionViewItem, QWidget, QLineEdit
 
 from modules.utils.language import get_translation
 from modules.utils.log import init_logging

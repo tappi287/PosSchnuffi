@@ -36,10 +36,12 @@ from __future__ import (print_function, division, unicode_literals,
                         absolute_import)
 import os
 
-from PySide2.QtCore import QMetaObject
-from PySide2.QtUiTools import QUiLoader
+from qtpy.QtCore import QMetaObject
+from qtpy.QtUiTools import QUiLoader
 
 SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
+# Has to be initialized once before QApplication
+UI_LOADER = QUiLoader()
 
 
 class UiLoader(QUiLoader):

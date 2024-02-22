@@ -1,9 +1,9 @@
 import logging
 from pathlib import Path
 
-from PySide2 import QtWidgets
-from PySide2.QtCore import Signal
-from PySide2.QtWidgets import QWidget, QMessageBox
+from qtpy import QtWidgets
+from qtpy.QtCore import Signal
+from qtpy.QtWidgets import QWidget, QMessageBox
 
 from modules.utils.globals import Resource, UI_FILE_DIALOG
 from modules.utils.gui_utils import SetupWidget

@@ -1,6 +1,6 @@
 import sys
 
-from PySide2.QtWidgets import QApplication, QTreeWidget, QWidget
+from qtpy.QtWidgets import QApplication, QTreeWidget, QWidget
 
 from modules.pos_schnuffi_ui import SchnuffiWindow
 from modules.utils.globals import APP_NAME

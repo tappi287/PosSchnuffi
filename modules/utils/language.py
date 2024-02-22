@@ -58,4 +58,4 @@ def get_translation():
 
     locale_dir = os.path.join(get_current_modules_dir(), 'locale')
 
-    return translation(APP_NAME, localedir=locale_dir, codeset='UTF-8')
+    return translation(APP_NAME, localedir=locale_dir)

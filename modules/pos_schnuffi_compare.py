@@ -1,7 +1,7 @@
 from modules.pos_schnuffi_xml_diff import PosDiff
 
-from PySide2.QtWidgets import QTreeWidgetItem
-from PySide2 import QtCore
+from qtpy.QtWidgets import QTreeWidgetItem
+from qtpy import QtCore
 
 
 class GuiCompare(QtCore.QThread):

@@ -23,9 +23,9 @@ import os.path
 from pathlib import Path
 from typing import Union
 
-from PySide2.QtCore import QObject, Signal, QRegExp, Qt
-from PySide2.QtGui import QRegExpValidator
-from PySide2.QtWidgets import QFileDialog, QLineEdit, QToolButton
+from qtpy.QtCore import QObject, Signal, QRegularExpression, Qt
+from qtpy.QtGui import QRegularExpressionValidator
+from qtpy.QtWidgets import QFileDialog, QLineEdit, QToolButton
 
 from modules.utils.language import get_translation
 from modules.utils.log import init_logging
@@ -81,9 +81,8 @@ class SetDirectoryPath(QObject):
 
         if self.line_edit:
             self.reject_invalid_path_edits = reject_invalid_path_edits
-            regex = QRegExp(r'[^<>?"|*´`ß]*')
-            regex.setCaseSensitivity(Qt.CaseInsensitive)
-            self.line_edit.setValidator(QRegExpValidator(regex))
+            regex = QRegularExpression(r'[^<>?"|*´`ß]*', QRegularExpression.CaseInsensitiveOption)
+            self.line_edit.setValidator(QRegularExpressionValidator(regex))
 
             self.line_edit.editingFinished.connect(self.path_text_changed)
 

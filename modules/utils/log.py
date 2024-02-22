@@ -4,7 +4,7 @@ import logging
 import logging.config
 
 from logging.handlers import QueueHandler, QueueListener
-from PySide2.QtCore import QObject, Signal
+from qtpy.QtCore import QObject, Signal
 
 from modules.utils.globals import get_settings_dir, LOG_FILE_NAME, FROZEN, MAIN_LOGGER_NAME
 

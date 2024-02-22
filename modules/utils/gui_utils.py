@@ -5,10 +5,10 @@ from statistics import mean
 from time import time
 from typing import Iterator
 
-from PySide2 import QtCore, QtWidgets
-from PySide2.QtCore import QEvent, QFile, QObject, QTimer, Qt, Signal, Slot
-from PySide2.QtGui import QMouseEvent
-from PySide2.QtWidgets import QTreeWidgetItem, QTreeWidgetItemIterator, QWidget
+from qtpy import QtCore, QtWidgets
+from qtpy.QtCore import QEvent, QFile, QObject, QTimer, Qt, Signal, Slot
+from qtpy.QtGui import QMouseEvent
+from qtpy.QtWidgets import QTreeWidgetItem, QTreeWidgetItemIterator, QWidget
 from lxml import etree as Et
 
 from modules.utils.globals import UI_PATH, get_current_modules_dir, get_settings_dir
@@ -201,7 +201,7 @@ class MouseDblClickFilter(QObject):
     def __init__(self, widget_parent: QWidget, method_call: callable, *args):
         """ Capture Mouse double click events
 
-        :param PySide2.QtWidgets.QWidget widget_parent: Widget the event filter will be installed on
+        :param qtpy.QtWidgets.QWidget widget_parent: Widget the event filter will be installed on
         :param callable method_call: Method to call when event was triggered
         :param *args: Arguments to send to the method_call
         """

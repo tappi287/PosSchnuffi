@@ -1,9 +1,9 @@
 import re
 from typing import Tuple
 
-from PySide2 import QtWidgets
-from PySide2.QtCore import QAbstractAnimation, QPropertyAnimation, QTimer, Qt
-from PySide2.QtGui import QEnterEvent, QMouseEvent, QRegion
+from qtpy import QtWidgets
+from qtpy.QtCore import QAbstractAnimation, QPropertyAnimation, QTimer, Qt
+from qtpy.QtGui import QEnterEvent, QMouseEvent, QRegion
 
 from modules.utils.animation import BgrAnimation
 from modules.utils.globals import Resource

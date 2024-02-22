@@ -1,8 +1,8 @@
 from typing import Tuple
 
-from PySide2.QtWidgets import QWidget
-from PySide2.QtCore import QObject, QSize, QPropertyAnimation, QEasingCurve, QAbstractAnimation, Property
-from PySide2.QtGui import QColor, QPalette
+from qtpy.QtWidgets import QWidget
+from qtpy.QtCore import QObject, QSize, QPropertyAnimation, QEasingCurve, QAbstractAnimation, Property
+from qtpy.QtGui import QColor, QPalette
 
 from modules.utils.log import init_logging
 
@@ -42,7 +42,7 @@ class BgrAnimation(QObject):
         self.widget = widget
         self.color = QColor()
 
-        self.bg_color = self.widget.palette().color(QPalette.Background)
+        self.bg_color = self.widget.palette().color(QPalette.Base)
         self.additional_stylesheet = additional_stylesheet
         if bg_color:
             self.bg_color = QColor(*bg_color)

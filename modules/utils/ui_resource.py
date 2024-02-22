@@ -1,5 +1,5 @@
-from PySide2.QtGui import QFont, QFontDatabase, QIcon, QPixmap
-from PySide2.QtMultimedia import QSound
+from qtpy.QtGui import QFont, QFontDatabase, QIcon, QPixmap
+from qtpy.QtMultimedia import QSoundEffect
 
 from modules.utils.globals import Resource
 from modules.utils.language import get_translation
@@ -129,18 +129,18 @@ class SoundRsc:
     positive = 'positive'
 
     @classmethod
-    def _get_resource_from_key(cls, resource_key, parent=None) -> QSound:
+    def _get_resource_from_key(cls, resource_key, parent=None) -> QSoundEffect:
         if resource_key in cls.storage:
             return cls.storage.get(resource_key)
 
         if resource_key not in Resource.icon_paths.keys():
-            return QSound('')
+            return QSoundEffect('')
 
         rsc_path: str = Resource.icon_paths.get(resource_key)
 
         LOGGER.debug('Creating QSound for resource %s', rsc_path)
 
-        sound_obj = QSound(rsc_path, parent)
+        sound_obj = QSoundEffect(rsc_path, parent)
         cls.storage[resource_key] = sound_obj
 
         return sound_obj

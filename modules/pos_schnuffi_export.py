@@ -2,8 +2,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Union, Tuple, List
 
-from PySide2 import QtWidgets
-from PySide2.QtCore import Qt
+from qtpy import QtWidgets
+from qtpy.QtCore import Qt
 from lxml import etree
 
 from modules.pos_schnuffi_msg import Msg
