@@ -108,6 +108,7 @@ class TreeWidgetFilter(QObject):
     def filtering_finished(self):
         LOGGER.debug('Filter operation finished on: %s', self.widget.objectName())
         self.widget.show()
+        self.widget.setFocus()
 
         if self.line_edit.text():
             self.clean = False
