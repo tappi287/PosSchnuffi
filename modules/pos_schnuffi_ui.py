@@ -150,6 +150,9 @@ class SchnuffiWindow(QtWidgets.QMainWindow):
             if widget in self.widget_list:
                 widget.filter.start()
 
+            if hasattr(widget, 'undo_stack'):
+                widget.undo_stack.setActive(True)
+
             if widget in self.non_exportable_widgets:
                 self.menuExport.setEnabled(False)
 
