@@ -6,6 +6,7 @@ from qtpy import QtCore, QtWidgets
 from qtpy.QtGui import QBrush, QColor, QKeySequence, QUndoStack, QUndoGroup
 from qtpy.QtWidgets import QGroupBox, QLineEdit, QMenu
 
+from context_menu import ContextMenu
 from modules.filter_tree_widget import TreeWidgetFilter
 from modules.item_edit_undo import KnechtValueDelegate
 from modules.pos_schnuffi_compare import GuiCompare
@@ -121,6 +122,7 @@ class SchnuffiWindow(QtWidgets.QMainWindow):
             # Setup Filtering
             widget.filter = TreeWidgetFilter(self, widget, self.lineEditFilter)
             widget.setAlternatingRowColors(True)
+            ContextMenu(widget)
 
         self.intro_timer.timeout.connect(self.show_intro_msg)
         self.intro_timer.start()
@@ -131,6 +133,7 @@ class SchnuffiWindow(QtWidgets.QMainWindow):
 
         # Tab Changed
         self.widgetTabs.currentChanged.connect(self.tab_changed)
+
 
     def widget_with_focus(self):
         """ Return the current or last QTreeWidget in focus """
